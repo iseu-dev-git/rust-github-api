@@ -149,6 +149,56 @@ impl From<GitHubUserGraphQL> for GitHubUser {
     }
 }
 
+// Organización desde GraphQL
+#[derive(Serialize, Deserialize, Debug)]
+struct GitHubOrgGraphQL {
+    login: String,
+    id: String,
+    avatarUrl: String,
+    url: String,
+    name: Option<String>,
+    description: Option<String>,
+    websiteUrl: Option<String>,
+    location: Option<String>,
+    email: Option<String>,
+    createdAt: String,
+    updatedAt: String,
+}
+
+// Organización simplificada para la respuesta
+#[derive(Serialize, Debug)]
+struct GitHubOrg {
+    login: String,
+    id: String,
+    avatar_url: String,
+    html_url: String,
+    name: Option<String>,
+    description: Option<String>,
+    website_url: Option<String>,
+    location: Option<String>,
+    email: Option<String>,
+    created_at: String,
+    updated_at: String,
+}
+
+impl From<GitHubOrgGraphQL> for GitHubOrg {
+    fn from(org: GitHubOrgGraphQL) -> Self {
+        GitHubOrg {
+            login: org.login,
+            id: org.id,
+            avatar_url: org.avatarUrl,
+            html_url: org.url,
+            name: org.name,
+            description: org.description,
+            website_url: org.websiteUrl,
+            location: org.location,
+            email: org.email,
+            created_at: org.createdAt,
+            updated_at: org.updatedAt,
+        }
+    }
+}
+
 // Repositorio desde GraphQL
 #[derive(Serialize, Deserialize, Debug)]
 struct GitHubRepoGraphQL {
@@ -381,6 +431,30 @@ query($username: String!) {
 }
 "#;
 
+// Query para organizaciones
+const QUERY_USER_ORGS: &str = r#"
+query($username: String!) {
+    user(login: $username) {
+        organizations(first: 100, orderBy: {field: CREATED_AT, direction: DESC}) {
+            totalCount
+            nodes {
+                login
+                id
+                avatarUrl
+                url
+                name
+                description
+                websiteUrl
+                location
+                email
+                createdAt
+                updatedAt
+            }
+        }
+    }
+}
+"#;
+
 // Query para repositorios
 const QUERY_USER_REPOS: &str = r#"
 query($username: String!, $first: Int!) {
@@ -539,6 +613,54 @@ async fn get_github_repos(req: HttpRequest, path: web::Path<String>) -> HttpResp
     }
 }
 
+// GET /api/v1/github/users/{username}/orgs
+async fn get_github_orgs(req: HttpRequest, path: web::Path<String>) -> HttpResponse {
+    let username = path.into_inner();
+
+    #[derive(Serialize)]
+    struct OrgsResponse {
+        username: String,
+        total: usize,
+        organizations: Vec<GitHubOrg>,
+    }
+
+    #[derive(Deserialize)]
+    struct OrgsData {
+        user: UserOrgs,
+    }
+
+    #[derive(Deserialize)]
+    struct UserOrgs {
+        organizations: OrgNodes,
+    }
+
+    #[derive(Deserialize)]
+    struct OrgNodes {
+        totalCount: u64,
+        nodes: Vec<GitHubOrgGraphQL>,
+    }
+
+    let variables = Some(serde_json::json!({ "username": username }));
+
+    match graphql_query::<OrgsData>(QUERY_USER_ORGS, variables).await {
+        Ok(data) => {
+            let orgs: Vec<GitHubOrg> = data.user.organizations.nodes.into_iter().map(|o| o.into()).collect();
+            build_response(&req, OrgsResponse {
+                username: username.clone(),
+                total: orgs.len(),
+                organizations: orgs,
+            })
+        }
+        Err(e) => {
+            build_error_response(&req, actix_web::http::StatusCode::NOT_FOUND, OrgsResponse {
+                username: username.clone(),
+                total: 0,
+                organizations: vec![],
+            })
+        }
+    }
+}
+
 // GET /api/v1/github/status
 async fn get_github_status(req: HttpRequest) -> HttpResponse {
     #[derive(Serialize)]
@@ -597,6 +719,7 @@ async fn main() -> std::io::Result<()> {
     println!("   GET  /api/v1/github/status");
     println!("   GET  /api/v1/github/users/{{username}}");
     println!("   GET  /api/v1/github/users/{{username}}/repos");
+    println!("   GET  /api/v1/github/users/{{username}}/orgs");
     println!("");
     
     if GITHUB_TOKEN.is_some() {
@@ -624,6 +747,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/v1/github/status", web::get().to(get_github_status))
             .route("/api/v1/github/users/{username}", web::get().to(get_github_user))
             .route("/api/v1/github/users/{username}/repos", web::get().to(get_github_repos))
+            .route("/api/v1/github/users/{username}/orgs", web::get().to(get_github_orgs))
             .route("/api/v1/github/token", web::post().to(set_github_token))
     })
     .bind(&bind_addr)?
