@@ -3,6 +3,10 @@ name = "rust_api"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "rust_api"
+path = "src/main.rs"
+
 [dependencies]
 actix-web = "4"
 actix-cors = "0.7"
