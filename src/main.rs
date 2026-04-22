@@ -418,6 +418,13 @@ query($username: String!, $first: Int!) {
 
 // ==================== HANDLERS ====================
 
+// GET /
+async fn index() -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(include_str!("../index.html"))
+}
+
 // GET /api/v1/saludar?nombre=XXX
 async fn saludar(req: HttpRequest, query: web::Query<QueryParams>) -> HttpResponse {
     #[derive(Serialize)]
@@ -585,6 +592,7 @@ async fn main() -> std::io::Result<()> {
 
     println!("🚀 Servidor GraphQL corriendo en http://127.0.0.1:8080");
     println!("📚 Endpoints disponibles:");
+    println!("   GET  /");
     println!("   GET  /api/v1/saludar?nombre=XXX");
     println!("   GET  /api/v1/github/status");
     println!("   GET  /api/v1/github/users/{{username}}");
@@ -611,6 +619,7 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(cors)
+            .route("/", web::get().to(index))
             .route("/api/v1/saludar", web::get().to(saludar))
             .route("/api/v1/github/status", web::get().to(get_github_status))
             .route("/api/v1/github/users/{username}", web::get().to(get_github_user))
