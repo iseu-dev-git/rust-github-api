@@ -293,26 +293,8 @@ rust-github-api/
 
 Este proyecto está bajo licencia **MIT**. Ver archivo `LICENSE` para más detalles.
 
-## 🤝 Contribuciones
 
-Las contribuciones son bienvenidas. Para cambios importantes:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📧 Contacto
-
-Para preguntas o sugerencias, abre un [issue](https://github.com/iseu-dev-git/rust-github-api/issues) en el repositorio.
-
-## 🙏 Agradecimientos
-
-- [Actix-web](https://actix.rs/) - Framework web asíncrono
-- [GitHub GraphQL API](https://docs.github.com/en/graphql) - API de GitHub
-- [Rust](https://www.rust-lang.org/) - Lenguaje de programación
 
 ---
 
-**Hecho con ❤️ en Rust**
+**Hecho con Rust**
