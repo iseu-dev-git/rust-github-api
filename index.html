@@ -1,31 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>GitHub Explorer · UI Redesign</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>Rust GitHub · Cyber UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#0b0f19;
-  --card:#121826;
-  --glass:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.08);
-  --accent:#6366f1;
-  --accent2:#22d3ee;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
+  --bg:#020617;
+  --card:#020617;
+  --neon:#00f0ff;
+  --neon2:#8b5cf6;
+  --border:rgba(0,240,255,.2);
+  --text:#e2e8f0;
+  --muted:#64748b;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:'Inter',sans-serif;
-  background: radial-gradient(circle at 20% 20%, #1e293b, #020617);
+  background:#020617;
   color:var(--text);
+  overflow-x:hidden;
+}
+
+/* background glow */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 20% 20%, rgba(0,240,255,.15), transparent 40%),
+             radial-gradient(circle at 80% 80%, rgba(139,92,246,.15), transparent 40%);
+  z-index:0;
 }
 
 .container{
+  position:relative;
+  z-index:1;
   max-width:1100px;
   margin:auto;
   padding:2rem;
@@ -39,26 +52,31 @@ header{
 }
 
 .logo{
+  font-family:'Orbitron',sans-serif;
   font-weight:800;
-  font-size:1.5rem;
+  font-size:1.6rem;
+  color:var(--neon);
+  text-shadow:0 0 10px var(--neon);
 }
 
 .badge{
   font-size:.7rem;
   padding:.3rem .7rem;
   border-radius:999px;
-  background:var(--glass);
   border:1px solid var(--border);
+  color:var(--neon);
+  box-shadow:0 0 6px var(--neon);
 }
 
 .search-box{
-  background:var(--glass);
   border:1px solid var(--border);
-  border-radius:16px;
+  border-radius:14px;
   padding:1rem;
   display:flex;
   gap:.5rem;
-  backdrop-filter:blur(12px);
+  background:rgba(2,6,23,.7);
+  backdrop-filter:blur(10px);
+  box-shadow:0 0 20px rgba(0,240,255,.15);
 }
 
 .search-box input{
@@ -66,18 +84,19 @@ header{
   background:transparent;
   border:none;
   color:var(--text);
-  font-size:1rem;
   outline:none;
+  font-family:'Orbitron',sans-serif;
 }
 
 .search-box button{
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  background:linear-gradient(135deg,var(--neon),var(--neon2));
   border:none;
-  padding:.6rem 1.2rem;
+  padding:.6rem 1.3rem;
   border-radius:10px;
-  color:white;
-  font-weight:600;
+  color:#000;
+  font-weight:700;
   cursor:pointer;
+  box-shadow:0 0 15px var(--neon);
 }
 
 .profile-card{
@@ -85,24 +104,26 @@ header{
   display:flex;
   gap:1.5rem;
   padding:1.5rem;
-  background:var(--glass);
   border:1px solid var(--border);
-  border-radius:20px;
-  backdrop-filter:blur(10px);
+  border-radius:18px;
+  background:rgba(2,6,23,.7);
+  box-shadow:0 0 25px rgba(0,240,255,.15);
 }
 
 .profile-card img{
   width:90px;
   border-radius:50%;
+  border:2px solid var(--neon);
+  box-shadow:0 0 10px var(--neon);
 }
 
 .profile-info h2{
-  font-size:1.4rem;
+  font-family:'Orbitron';
+  color:var(--neon);
 }
 
 .profile-info p{
   color:var(--muted);
-  font-size:.9rem;
 }
 
 .stats{
@@ -112,15 +133,17 @@ header{
 }
 
 .stat{
-  background:var(--card);
+  border:1px solid var(--border);
   padding:.6rem 1rem;
   border-radius:10px;
   text-align:center;
+  box-shadow:0 0 10px rgba(0,240,255,.1);
 }
 
 .stat span{
   display:block;
   font-weight:700;
+  color:var(--neon);
 }
 
 .repos{
@@ -132,20 +155,33 @@ header{
 
 .repo{
   padding:1rem;
-  border-radius:16px;
-  background:var(--glass);
+  border-radius:14px;
   border:1px solid var(--border);
-  transition:.2s;
+  background:rgba(2,6,23,.7);
+  transition:.25s;
+  position:relative;
+  overflow:hidden;
 }
 
+.repo::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg, transparent, rgba(0,240,255,.15), transparent);
+  opacity:0;
+  transition:.3s;
+}
+
+.repo:hover::before{opacity:1}
+
 .repo:hover{
-  transform:translateY(-4px);
-  border-color:var(--accent);
+  transform:translateY(-5px) scale(1.02);
+  box-shadow:0 0 20px var(--neon);
 }
 
 .repo h4{
-  font-size:.95rem;
-  margin-bottom:.3rem;
+  color:var(--neon);
+  font-family:'Orbitron';
 }
 
 .repo p{
@@ -160,16 +196,16 @@ header{
 <div class="container">
 
 <header>
-  <div class="logo">⚡ GitHub Explorer</div>
+  <div class="logo">⚡ EMPROWLER CYBER</div>
   <div>
     <span class="badge" id="apiBadge">API</span>
-    <span class="badge" id="tokenBadge">Token</span>
+    <span class="badge" id="tokenBadge">TOKEN</span>
   </div>
 </header>
 
 <div class="search-box">
   <input id="usernameInput" placeholder="Buscar usuario...">
-  <button onclick="buscarUsuario()">Buscar</button>
+  <button onclick="buscarUsuario()">SCAN</button>
 </div>
 
 <div id="statusBar"></div>
@@ -239,4 +275,3 @@ function renderRepos(repos){
 
 </body>
 </html>
-
